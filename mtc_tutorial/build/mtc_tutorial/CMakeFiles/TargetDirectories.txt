@@ -1,0 +1,10 @@
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/uninstall.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/mtc_tutorial_uninstall.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/mtc_tutorial.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/test.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/edit_cache.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/rebuild_cache.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/list_install_components.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/install.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/install/local.dir
+/home/ajeeb/ros2ws/src/mtc_tutorial/build/mtc_tutorial/CMakeFiles/install/strip.dir

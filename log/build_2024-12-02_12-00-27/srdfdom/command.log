@@ -1,0 +1,1 @@
+Invoking command in '/home/ajeeb/ros2ws/src/build/srdfdom': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ajeeb/ros2ws/install/moveit_configs_utils:/home/ajeeb/ros2ws/install/launch_param_builder:/opt/ros/humble /usr/bin/cmake /home/ajeeb/ros2ws/src/srdfdom -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/ajeeb/ros2ws/src/install/srdfdom
