@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="default">
+    <!-- Include the Gazebo ROS factory plugin -->
+    <plugin name="libgazebo_ros_factory" filename="libgazebo_ros_factory.so"/>
+    
+    <!-- Other world elements like lights, ground plane, etc. -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+  </world>
+</sdf>

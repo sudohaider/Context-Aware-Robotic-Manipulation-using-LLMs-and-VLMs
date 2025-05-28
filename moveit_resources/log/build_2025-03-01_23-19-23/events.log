@@ -1,0 +1,8 @@
+[0.000000] (-) TimerEvent: {}
+[0.000141] (-) JobUnselected: {'identifier': 'moveit_resources'}
+[0.000165] (-) JobUnselected: {'identifier': 'moveit_resources_fanuc_description'}
+[0.000177] (-) JobUnselected: {'identifier': 'moveit_resources_fanuc_moveit_config'}
+[0.000187] (-) JobUnselected: {'identifier': 'moveit_resources_panda_description'}
+[0.000197] (-) JobUnselected: {'identifier': 'moveit_resources_panda_moveit_config'}
+[0.000206] (-) JobUnselected: {'identifier': 'moveit_resources_pr2_description'}
+[0.000540] (-) EventReactorShutdown: {}
