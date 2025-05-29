@@ -44,6 +44,7 @@ namespace mtc_tutorial
     std::vector<std::string> actions;
     int i = 0;
     int action_length = actions.size();
+    bool action_completed_ = false; // Flag to track if the action is completed
     rclcpp::Client<action_tutorials_interfaces::srv::PlanningAction>::SharedPtr task_planner_service_client;
 
     explicit MtcActionClient(const rclcpp::NodeOptions &options)
@@ -64,6 +65,24 @@ namespace mtc_tutorial
         RCLCPP_INFO(this->get_logger(),
                     "Service Unavailable. Waiting for Service...");
       }
+
+      // Add this subscriber to your class
+      action_completed_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+          "/robot_action_completed", 10, // Topic name and QoS depth
+          [this](const std_msgs::msg::Bool::SharedPtr msg)
+          {
+            //action_completed_ = ; // Update the flag based on the message
+            if (action_completed_ && msg->data)
+            {
+              RCLCPP_INFO(this->get_logger(), "Robot has completed the current action.");
+              RCLCPP_INFO(this->get_logger(), "Sending next goal.");
+              send_goal(this->i);
+            }
+            else
+            {
+              RCLCPP_INFO(this->get_logger(), "Robot is still executing the current action.");
+            }
+          });
 
       auto request = std::make_shared<action_tutorials_interfaces::srv::PlanningAction::Request>();
       // set request variables here, if any
@@ -183,7 +202,8 @@ namespace mtc_tutorial
         }
         else
         {
-          send_goal(this->i);
+          action_completed_ = true; // Set the flag to true when action is completed
+          //send_goal(this->i);
         }
 
         break;

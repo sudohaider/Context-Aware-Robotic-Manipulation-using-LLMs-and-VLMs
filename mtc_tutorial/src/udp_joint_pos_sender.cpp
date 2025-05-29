@@ -47,6 +47,11 @@ private:
     // Send over UDP
     socket_.send_to(boost::asio::buffer(payload), robot_endpoint_);
     RCLCPP_INFO(this->get_logger(), "Sent %u joint positions over UDP", size);
+    
+    for (size_t i = 0; i < 9; ++i) 
+    {
+      RCLCPP_INFO(this->get_logger(), "Joint %zu: %f", i, latest_joint_positions_[i]);
+    }
   }
 
   // ROS2 Subscribers
