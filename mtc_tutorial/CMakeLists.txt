@@ -51,7 +51,8 @@ ament_target_dependencies(action_client
   "action_tutorials_interfaces"
   "rclcpp"
   "rclcpp_action"
-  "rclcpp_components")
+  "rclcpp_components"
+  "std_msgs")
 rclcpp_components_register_node(action_client PLUGIN "mtc_tutorial::MtcActionClient" EXECUTABLE mtc_action_client)
 install(TARGETS
   action_client

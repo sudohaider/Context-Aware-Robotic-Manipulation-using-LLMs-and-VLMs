@@ -7,6 +7,8 @@
 #include "action_tutorials_interfaces/action/fibonacci.hpp"
 #include "action_tutorials_interfaces/srv/planning_action.hpp"
 
+#include <std_msgs/msg/bool.hpp>
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
@@ -46,6 +48,7 @@ namespace mtc_tutorial
     int action_length = actions.size();
     bool action_completed_ = false; // Flag to track if the action is completed
     rclcpp::Client<action_tutorials_interfaces::srv::PlanningAction>::SharedPtr task_planner_service_client;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr action_completed_sub_;
 
     explicit MtcActionClient(const rclcpp::NodeOptions &options)
         : Node("mtc_action_client", options)
