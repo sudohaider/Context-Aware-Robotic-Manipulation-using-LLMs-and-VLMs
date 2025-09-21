@@ -12,7 +12,6 @@ find_package(moveit_task_constructor_core REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(action_tutorials_interfaces REQUIRED)
 find_package(task_planner_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Boost REQUIRED)
@@ -29,7 +28,6 @@ target_include_directories(action_server PRIVATE
 target_compile_definitions(action_server
   PRIVATE "MTC_TUTORIAL_BUILDING_DLL")
 ament_target_dependencies(action_server
-  "action_tutorials_interfaces"
   "task_planner_interfaces"
   "rclcpp"
   "rclcpp_action"
@@ -50,7 +48,6 @@ target_include_directories(action_client PRIVATE
 target_compile_definitions(action_client
   PRIVATE "MTC_TUTORIALS_CPP_BUILDING_DLL")
 ament_target_dependencies(action_client
-  "action_tutorials_interfaces"
   "task_planner_interfaces"
   "rclcpp"
   "rclcpp_action"
@@ -69,7 +66,7 @@ add_executable(mtc_chuppa src/mtc_chuppa.cpp)
 add_executable(udp_joint_pos_sender src/udp_joint_pos_sender.cpp)
 
 ament_target_dependencies(mtc_tutorial moveit_task_constructor_core moveit_core rclcpp)
-ament_target_dependencies(mtc_chuppa moveit_task_constructor_core moveit_core rclcpp action_tutorials_interfaces task_planner_interfaces)
+ament_target_dependencies(mtc_chuppa moveit_task_constructor_core moveit_core rclcpp task_planner_interfaces)
 ament_target_dependencies(udp_joint_pos_sender rclcpp sensor_msgs std_msgs)
 
 target_link_libraries(udp_joint_pos_sender Boost::boost)
