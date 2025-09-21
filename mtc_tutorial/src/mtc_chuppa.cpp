@@ -14,20 +14,19 @@
 #else
 #include <tf2_eigen/tf2_eigen.h>
 #endif
-#include <action_tutorials_interfaces/srv/planning_action.hpp>
-#include "action_tutorials_interfaces/action/fibonacci.hpp"
+//#include <action_tutorials_interfaces/srv/planning_action.hpp>
+#include "task_planner_interfaces/srv/planning_action.hpp"
+//#include "action_tutorials_interfaces/action/fibonacci.hpp"
+#include "task_planner_interfaces/action/fibonacci_goal.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include <random>  // Include this at the top of your file
 #include "std_msgs/msg/bool.hpp"
 
 
-
-
-
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("mtc_tutorial");
 namespace mtc = moveit::task_constructor;
-using Fibonacci = action_tutorials_interfaces::action::Fibonacci;
-using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<Fibonacci>;
+using FibonacciGoal = task_planner_interfaces::action::FibonacciGoal;
+using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<FibonacciGoal>;
 std::string param_value;
 
 class MTCTaskNode
@@ -35,7 +34,7 @@ class MTCTaskNode
 public:
 
     MTCTaskNode(const rclcpp::NodeOptions &options);
-    rclcpp::Service<action_tutorials_interfaces::srv::PlanningAction>::SharedPtr service_;
+    rclcpp::Service<task_planner_interfaces::srv::PlanningAction>::SharedPtr service_;
 
 
     rclcpp::node_interfaces::NodeBaseInterface::SharedPtr getNodeBaseInterface();
@@ -46,7 +45,7 @@ public:
 
 private:
     // Compose an MTC task from a series of stages.
-    rclcpp_action::Server<Fibonacci>::SharedPtr action_server_;
+    rclcpp_action::Server<FibonacciGoal>::SharedPtr action_server_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr task_completed_pub_;
 
     mtc::Task createTask();
@@ -58,7 +57,7 @@ private:
     /// actionserver declarations: start ---------------------------------------------
     rclcpp_action::GoalResponse handle_goal(
         const rclcpp_action::GoalUUID &uuid,
-        std::shared_ptr<const Fibonacci::Goal> goal);
+        std::shared_ptr<const FibonacciGoal::Goal> goal);
     rclcpp_action::CancelResponse handle_cancel(
         const std::shared_ptr<GoalHandleFibonacci> goal_handle);
     void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle);
@@ -88,11 +87,11 @@ MTCTaskNode::MTCTaskNode(const rclcpp::NodeOptions& options)
 
     using namespace std::placeholders;
 
-    this->action_server_ = rclcpp_action::create_server<Fibonacci>(
+    this->action_server_ = rclcpp_action::create_server<FibonacciGoal>(
             node_->get_node_base_interface(),
             node_->get_node_clock_interface(),
             node_->get_node_logging_interface(),
-            node_->get_node_waitables_interface(), "fibonacci",
+            node_->get_node_waitables_interface(), "fibonacci_goal",
             std::bind(&MTCTaskNode::handle_goal, this, _1, _2),
             std::bind(&MTCTaskNode::handle_cancel, this, _1),
             std::bind(&MTCTaskNode::handle_accepted, this, _1));
@@ -104,8 +103,10 @@ MTCTaskNode::MTCTaskNode(const rclcpp::NodeOptions& options)
 
 rclcpp_action::GoalResponse MTCTaskNode::handle_goal(
     const rclcpp_action::GoalUUID &uuid,
-    std::shared_ptr<const Fibonacci::Goal> goal)
+    std::shared_ptr<const FibonacciGoal::Goal> goal)
 {
+    RCLCPP_INFO(LOGGER, "I am haider");
+
     RCLCPP_INFO(LOGGER, "Received goal request for action: %s", goal->action_name.c_str());
     (void)uuid;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
@@ -125,9 +126,9 @@ void MTCTaskNode::execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle
     rclcpp::Rate loop_rate(50);
     const auto goal = goal_handle->get_goal();
     std::string action_name = goal->action_name;
-    auto feedback = std::make_shared<Fibonacci::Feedback>();
+    auto feedback = std::make_shared<FibonacciGoal::Feedback>();
     feedback->partial_sequence = "performing action: " + action_name;
-    auto result = std::make_shared<Fibonacci::Result>();
+    auto result = std::make_shared<FibonacciGoal::Result>();
 
     // SIMULATE FAILURE: 50% probability of failing
     std::random_device rd;
@@ -575,22 +576,28 @@ mtc::Task MTCTaskNode::createTask()
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
+    RCLCPP_INFO(LOGGER, "Starting mtc_tutorial node...");
 
     rclcpp::NodeOptions options;
     options.automatically_declare_parameters_from_overrides(true);
 
+    RCLCPP_INFO(LOGGER, "Node options set, creating MTCTaskNode...");
+
     auto mtc_task_node = std::make_shared<MTCTaskNode>(options);
     rclcpp::executors::MultiThreadedExecutor executor;
 
+    RCLCPP_INFO(LOGGER, "MTCTaskNode created, setting up planning scene...");
+    
     auto spin_thread = std::make_unique<std::thread>([&executor, &mtc_task_node]()
                                                      {
     executor.add_node(mtc_task_node->getNodeBaseInterface());
     executor.spin();
     executor.remove_node(mtc_task_node->getNodeBaseInterface()); });
 
+    RCLCPP_INFO(LOGGER, "Spinning executor in separate thread, setting up planning scene...");
     mtc_task_node->setupPlanningScene();
 
-
+    RCLCPP_INFO(LOGGER, "Planning scene set up, ready to receive action goals.");
     spin_thread->join();
     rclcpp::shutdown();
     return 0;

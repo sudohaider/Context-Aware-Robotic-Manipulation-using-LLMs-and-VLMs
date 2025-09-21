@@ -4,8 +4,11 @@
 #include <string>
 #include <sstream>
 
-#include "action_tutorials_interfaces/action/fibonacci.hpp"
-#include "action_tutorials_interfaces/srv/planning_action.hpp"
+// #include "action_tutorials_interfaces/action/fibonacci.hpp"
+#include "task_planner_interfaces/action/fibonacci_goal.hpp"
+//#include "action_tutorials_interfaces/srv/planning_action.hpp"
+#include "task_planner_interfaces/srv/planning_action.hpp"
+
 
 #include <std_msgs/msg/bool.hpp>
 
@@ -40,20 +43,20 @@ namespace mtc_tutorial
   class MtcActionClient : public rclcpp::Node
   {
   public:
-    using Fibonacci = action_tutorials_interfaces::action::Fibonacci;
+    using Fibonacci = task_planner_interfaces::action::FibonacciGoal;
     using GoalHandleFibonacci = rclcpp_action::ClientGoalHandle<Fibonacci>;
     bool last_goal_succeeded = false;
     std::vector<std::string> actions;
     int i = 0;
     int action_length = actions.size();
     bool action_completed_ = false; // Flag to track if the action is completed
-    rclcpp::Client<action_tutorials_interfaces::srv::PlanningAction>::SharedPtr task_planner_service_client;
+    rclcpp::Client<task_planner_interfaces::srv::PlanningAction>::SharedPtr task_planner_service_client;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr action_completed_sub_;
 
     explicit MtcActionClient(const rclcpp::NodeOptions &options)
         : Node("mtc_action_client", options)
     {
-      this->task_planner_service_client = this->create_client<action_tutorials_interfaces::srv::PlanningAction>("task_planner_service");
+      this->task_planner_service_client = this->create_client<task_planner_interfaces::srv::PlanningAction>("task_planner_service");
 
       // call service to fetch planning action array:
       while (!task_planner_service_client->wait_for_service(1s))
@@ -87,7 +90,7 @@ namespace mtc_tutorial
             }
           });
 
-      auto request = std::make_shared<action_tutorials_interfaces::srv::PlanningAction::Request>();
+      auto request = std::make_shared<task_planner_interfaces::srv::PlanningAction::Request>();
       // set request variables here, if any
       request->action_name = "hello"; // comment this line if using Empty() message
       // service_done_ = false; // inspired from action client c++ code
@@ -101,11 +104,11 @@ namespace mtc_tutorial
 
       this->client_ptr_ = rclcpp_action::create_client<Fibonacci>(
           this,
-          "fibonacci");
+          "fibonacci_goal");
     }
 
     void planning_service_response_callback(
-        rclcpp::Client<action_tutorials_interfaces::srv::PlanningAction>::SharedFuture future)
+        rclcpp::Client<task_planner_interfaces::srv::PlanningAction>::SharedFuture future)
     {
       auto status = future.wait_for(1s);
       if (status == std::future_status::ready)
@@ -145,7 +148,9 @@ namespace mtc_tutorial
       auto goal_msg = Fibonacci::Goal();
       goal_msg.action_name = actions[i];
 
+      RCLCPP_INFO(this->get_logger(), "Sending goal %s", goal_msg.action_name.c_str());
       RCLCPP_INFO(this->get_logger(), "Sending goal");
+      RCLCPP_INFO(this->get_logger(), "Sending goal %s", actions[i].c_str());
 
       auto send_goal_options = rclcpp_action::Client<Fibonacci>::SendGoalOptions();
       send_goal_options.goal_response_callback =
@@ -155,6 +160,8 @@ namespace mtc_tutorial
       send_goal_options.result_callback =
           std::bind(&MtcActionClient::result_callback, this, _1);
       this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
+      RCLCPP_INFO(this->get_logger(), "client ptr: %p", this->client_ptr_.get());
+
     }
 
   private:
@@ -215,7 +222,7 @@ namespace mtc_tutorial
       {
         RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
 
-        auto request = std::make_shared<action_tutorials_interfaces::srv::PlanningAction::Request>();
+        auto request = std::make_shared<task_planner_interfaces::srv::PlanningAction::Request>();
         // set request variables here, if any
         request->action_name = "replan"; // comment this line if using Empty() message
         // service_done_ = false; // inspired from action client c++ code

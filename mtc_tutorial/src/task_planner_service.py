@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from action_tutorials_interfaces.srv import PlanningAction  # Replace with your package name
+from task_planner_interfaces.srv import PlanningAction  # Replace with your package name
 
 import os
 import openai
