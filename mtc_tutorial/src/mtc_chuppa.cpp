@@ -202,6 +202,22 @@ void MTCTaskNode::setupPlanningScene()
 
     moveit::planning_interface::PlanningSceneInterface psi;
     psi.applyCollisionObject(object);
+    
+    moveit_msgs::msg::CollisionObject object2;
+    object2.id = "object2";
+    object2.header.frame_id = "world";
+    object2.primitives.resize(1);
+    object2.primitives[0].type = shape_msgs::msg::SolidPrimitive::CYLINDER;
+    object2.primitives[0].dimensions = {0.2, 0.02};
+
+    geometry_msgs::msg::Pose pose2;
+    pose2.position.x = 0.25; // 0.5;
+    pose2.position.y = -0.5; //-0.25;
+    pose2.orientation.w = 1.0;
+    object2.pose = pose2;
+
+    moveit::planning_interface::PlanningSceneInterface psi2;
+    psi2.applyCollisionObject(object2);
 }
 
 void MTCTaskNode::doTask()
@@ -325,7 +341,7 @@ mtc::Task MTCTaskNode::createTask()
                 stage->properties().configureInitFrom(mtc::Stage::PARENT);
                 stage->properties().set("marker_ns", "grasp_pose");
                 stage->setPreGraspPose("open");
-                stage->setObject("object");
+                stage->setObject("object2");
                 stage->setAngleDelta(M_PI / 12);
                 stage->setMonitoredStage(current_state_ptr); // Hook into current state
 
@@ -358,7 +374,7 @@ mtc::Task MTCTaskNode::createTask()
         {
             auto stage =
                 std::make_unique<mtc::stages::ModifyPlanningScene>("allow collision (hand,object)");
-            stage->allowCollisions("object",
+            stage->allowCollisions("object2",
                                    task.getRobotModel()
                                        ->getJointModelGroup(hand_group_name)
                                        ->getLinkModelNamesWithCollisionGeometry(),
