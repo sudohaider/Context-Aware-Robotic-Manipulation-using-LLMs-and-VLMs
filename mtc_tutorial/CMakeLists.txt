@@ -87,6 +87,7 @@ install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(PROGRAMS
   src/task_planner_service.py
+  src/constraint_checker_service.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
