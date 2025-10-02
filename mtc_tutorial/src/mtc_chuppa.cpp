@@ -14,12 +14,11 @@
 #else
 #include <tf2_eigen/tf2_eigen.h>
 #endif
-//#include <action_tutorials_interfaces/srv/planning_action.hpp>
 #include "task_planner_interfaces/srv/planning_action.hpp"
-//#include "action_tutorials_interfaces/action/fibonacci.hpp"
+#include "task_planner_interfaces/srv/constraint_check.hpp"
 #include "task_planner_interfaces/action/fibonacci_goal.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-#include <random>  // Include this at the top of your file
+#include <random> 
 #include "std_msgs/msg/bool.hpp"
 
 
@@ -44,17 +43,13 @@ public:
     void setupPlanningScene();
 
 private:
-    // Compose an MTC task from a series of stages.
     rclcpp_action::Server<FibonacciGoal>::SharedPtr action_server_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr task_completed_pub_;
 
     mtc::Task createTask();
-    // void serviceCallback(const std::shared_ptr<action_tutorials_interfaces::srv::PlanningAction::Request> request,
-    //                    std::shared_ptr<action_tutorials_interfaces::srv::PlanningAction::Response> response);
     mtc::Task task_;
     rclcpp::Node::SharedPtr node_;
  
-    /// actionserver declarations: start ---------------------------------------------
     rclcpp_action::GoalResponse handle_goal(
         const rclcpp_action::GoalUUID &uuid,
         std::shared_ptr<const FibonacciGoal::Goal> goal);
@@ -62,7 +57,6 @@ private:
         const std::shared_ptr<GoalHandleFibonacci> goal_handle);
     void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle);
     void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle);
-    /// end actionserver declarations -----------------------------------------------
 };
 
 rclcpp::node_interfaces::NodeBaseInterface::SharedPtr MTCTaskNode::getNodeBaseInterface()
@@ -73,17 +67,12 @@ rclcpp::node_interfaces::NodeBaseInterface::SharedPtr MTCTaskNode::getNodeBaseIn
 MTCTaskNode::MTCTaskNode(const rclcpp::NodeOptions& options)
   : node_{ std::make_shared<rclcpp::Node>("mtc_node", options) }
 {
-      // Declare and get parameters
-    // Check if the parameter is already declared
-    // service_ = node_->create_service<action_tutorials_interfaces::srv::PlanningAction>("planning_service", std::bind(&MTCTaskNode::serviceCallback, this, std::placeholders::_1, std::placeholders::_2));
-
 
     if (!node_->has_parameter("stage_name"))
     {
         node_->declare_parameter<std::string>("stage_name", "current");
     }
     param_value = node_->get_parameter("stage_name").as_string();
-    //RCLCPP_INFO(LOGGER, "stage_name: %s", param_value.c_str());
 
     using namespace std::placeholders;
 
@@ -105,7 +94,6 @@ rclcpp_action::GoalResponse MTCTaskNode::handle_goal(
     const rclcpp_action::GoalUUID &uuid,
     std::shared_ptr<const FibonacciGoal::Goal> goal)
 {
-    RCLCPP_INFO(LOGGER, "I am haider");
 
     RCLCPP_INFO(LOGGER, "Received goal request for action: %s", goal->action_name.c_str());
     (void)uuid;
@@ -130,18 +118,18 @@ void MTCTaskNode::execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle
     feedback->partial_sequence = "performing action: " + action_name;
     auto result = std::make_shared<FibonacciGoal::Result>();
 
-    // SIMULATE FAILURE: 50% probability of failing
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 1);
-    if (dis(gen) == 0 && action_name == "grasp")
-    {
-        RCLCPP_INFO(LOGGER, "50 percent probability condition met, failing task");
-        RCLCPP_ERROR(LOGGER, "Simulated failure condition met, aborting goal");
-        result->sequence = feedback->partial_sequence;
-        goal_handle->abort(result);
-        return;
-    }
+    // // SIMULATE FAILURE: 50% probability of failing
+    // std::random_device rd;
+    // std::mt19937 gen(rd());
+    // std::uniform_int_distribution<> dis(0, 1);
+    // if (dis(gen) == 0 && action_name == "grasp")
+    // {
+    //     RCLCPP_INFO(LOGGER, "50 percent probability condition met, failing task");
+    //     RCLCPP_ERROR(LOGGER, "Simulated failure condition met, aborting goal");
+    //     result->sequence = feedback->partial_sequence;
+    //     goal_handle->abort(result);
+    //     return;
+    // }
 
     // Check if there is a cancel request
     if (goal_handle->is_canceling())
@@ -183,7 +171,7 @@ void MTCTaskNode::handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goa
     using namespace std::placeholders;
     // this needs to return quickly to avoid blocking the executor, so spin up a new thread
     std::thread{std::bind(&MTCTaskNode::execute, this, _1), goal_handle}.detach();
-}
+}   
 
 void MTCTaskNode::setupPlanningScene()
 {

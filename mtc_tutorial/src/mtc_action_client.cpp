@@ -36,6 +36,9 @@
 #include <string>
 #include <chrono>
 
+#include "task_planner_interfaces/srv/constraint_check.hpp"  // include your service definition
+
+
 using namespace std::chrono_literals;
 
 namespace mtc_tutorial
@@ -82,6 +85,7 @@ namespace mtc_tutorial
             {
               RCLCPP_INFO(this->get_logger(), "Robot has completed the current action.");
               RCLCPP_INFO(this->get_logger(), "Sending next goal.");
+
               send_goal(this->i);
             }
             else
@@ -160,7 +164,6 @@ namespace mtc_tutorial
       send_goal_options.result_callback =
           std::bind(&MtcActionClient::result_callback, this, _1);
       this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
-      RCLCPP_INFO(this->get_logger(), "client ptr: %p", this->client_ptr_.get());
 
     }
 
@@ -224,7 +227,7 @@ namespace mtc_tutorial
 
         auto request = std::make_shared<task_planner_interfaces::srv::PlanningAction::Request>();
         // set request variables here, if any
-        request->action_name = "replan"; // comment this line if using Empty() message
+        request->action_name = "replan, "+ std::to_string(this->i); // comment this line if using Empty() message
         // service_done_ = false; // inspired from action client c++ code
         auto result_future = task_planner_service_client->async_send_request(
             request, std::bind(&MtcActionClient::planning_service_response_callback, this,

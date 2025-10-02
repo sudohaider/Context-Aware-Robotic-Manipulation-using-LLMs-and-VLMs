@@ -19,7 +19,7 @@ The available list of skills are as follows:
 "move to place"
 
 Precisely return the following:
-1. The correct sequence of skills only to perform the required task. You must not include any extra information in the response other than the sequence of skills.
+1. The correct sequence of skills only to perform the required task. You must not include any extra information in the response other than the sequence of skills. seperate the list by a comma only.
 """},
 ]
 
@@ -47,7 +47,7 @@ class StringServiceServer(Node):
     def __init__(self):
         super().__init__('task_planner_service')
         self.srv = self.create_service(PlanningAction, 'task_planner_service', self.task_planner_callback)
-
+        self.plan = []
     def task_planner_callback(self, request, response):
         global action_list
         self.get_logger().info('Incoming request: %s' % request.action_name)
@@ -58,12 +58,17 @@ class StringServiceServer(Node):
         self.get_logger().info('gpt response: %s' % action_list)
         # response.action_list = action_list
         # response.action_list = ["open hand", "move to goal", "pick object", "move to place", "place object", "return home"]
-        if (request.action_name == "replan"):
+        if ("replan" in request.action_name):
             #response.action_list = ["grasp", "move to place", "ungrasp"]
-            response.action_list = ["grasp", "move to place"]
+            index = int(request.action_name.split(",")[-1])  
+            failed_action = self.plan[index]       
+            next_actions  = self.plan[index:-1]
+               
+            response.action_list = self.plan[index:]
 
         else:
-            response.action_list = ["move to pick", "grasp", "move to place", "ungrasp"]
+            # self.plan = ["move to pick", "grasp", "move to place", "ungrasp"]
+            response.action_list = action_list
             #response.action_list = ["move to pick", "grasp", "move to place"]
 
         
