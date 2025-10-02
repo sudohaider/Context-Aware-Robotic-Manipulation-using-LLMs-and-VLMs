@@ -87,36 +87,40 @@ private:
 
     for (size_t i = 0; i < latest_joint_positions_.size(); ++i)
     {
-      if (i != 0 && i != 3)
-      {
+      // if (i != 0 && i != 3)
+      // {
         sent_joint_positions.push_back(latest_joint_positions_[i]);
         sent_joint_positions_global.push_back(latest_joint_positions_[i]);
-      }
+      // }
     }
 
-    if (sent_joint_positions.size() != 7)
+    if (sent_joint_positions.size() != 9)
     {
       RCLCPP_WARN(this->get_logger(), "Unexpected number of joints after filtering. Got %zu", sent_joint_positions.size());
       return;
     }
 
-    std::vector<uint8_t> payload(sizeof(double) * 7);
-    std::memcpy(payload.data(), sent_joint_positions.data(), sizeof(double) * 7);
-
-    RCLCPP_INFO(this->get_logger(), "Sending %u joint positions over UDP", 7u);
+    std::vector<uint8_t> payload(sizeof(double) * 9);
+    std::memcpy(payload.data(), sent_joint_positions.data(), sizeof(double) * 9);
+    // print in loop the sent joint positions
+    for (size_t i = 0; i < sent_joint_positions.size(); ++i)
+    {
+      RCLCPP_INFO(this->get_logger(), "Sending joint position %zu: %.6f", i, sent_joint_positions[i]);
+    }
     socket_.send_to(boost::asio::buffer(payload), robot_endpoint_);
   }
 
   void start_receive()
   {
     receiver_socket_.async_receive_from(
-        boost::asio::buffer(recv_buffer_), sender_endpoint_,
+        boost::asio::buffer(recv_buffer_), receive_endpoint_,
         [this](boost::system::error_code ec, std::size_t bytes_recvd)
         {
-          if (!ec && bytes_recvd == sizeof(double) * 7)
+          RCLCPP_INFO(this->get_logger(), "Received UDP data with size: %zu", bytes_recvd/9);
+          if (!ec && bytes_recvd == sizeof(double) * 9)
           {
-            std::array<uint8_t, sizeof(double) * 7> data_copy;
-            std::memcpy(data_copy.data(), recv_buffer_.data(), sizeof(double) * 7);
+            std::array<uint8_t, sizeof(double) * 9> data_copy;
+            std::memcpy(data_copy.data(), recv_buffer_.data(), sizeof(double) * 9);
 
             {
               std::lock_guard<std::mutex> lock(queue_mutex_);
@@ -140,6 +144,7 @@ private:
 
       if (!running_)
         break;
+      RCLCPP_INFO(this->get_logger(), "Received UDP data, processing...");
 
       auto data = std::move(recv_queue_.front());
       recv_queue_.pop();
@@ -147,7 +152,7 @@ private:
 
       if (pause_send){
       // Clear the queue
-      std::queue<std::array<uint8_t, sizeof(double) * 7>> empty;
+      std::queue<std::array<uint8_t, sizeof(double) * 9>> empty;
       std::swap(recv_queue_, empty);
       RCLCPP_WARN(this->get_logger(), "dropping all messages because pause_send is true");
 
@@ -155,19 +160,19 @@ private:
       
       }
 
-      double received[7];
+      double received[9];
       std::memcpy(received, data.data(), sizeof(received));
 
-      const double tolerance = 5e-4;
+      const double tolerance = 5;
       bool all_close = true;
 
-      if (sent_joint_positions_global.size() < 7)
+      if (sent_joint_positions_global.size() < 9)
       {
         RCLCPP_WARN(this->get_logger(), "No reference joint state to compare against.");
         continue;
       }
 
-      for (size_t i = 0; i < 7; ++i)
+      for (size_t i = 0; i < 9; ++i)
       {
         double diff = std::abs(received[i] - sent_joint_positions_global[i]);
         if (diff > tolerance)
@@ -216,13 +221,13 @@ private:
   boost::asio::ip::udp::endpoint robot_endpoint_;
   boost::asio::ip::udp::endpoint receive_endpoint_;
   boost::asio::ip::udp::endpoint sender_endpoint_;
-  std::array<uint8_t, sizeof(double) * 7> recv_buffer_;
+  std::array<uint8_t, sizeof(double) * 9> recv_buffer_;
   std::thread io_thread_;
   std::thread processing_thread_;
   std::atomic<bool> running_;
 
   // Thread-safe processing queue
-  std::queue<std::array<uint8_t, sizeof(double) * 7>> recv_queue_;
+  std::queue<std::array<uint8_t, sizeof(double) * 9>> recv_queue_;
   std::mutex queue_mutex_;
   std::condition_variable queue_cv_;
 };
