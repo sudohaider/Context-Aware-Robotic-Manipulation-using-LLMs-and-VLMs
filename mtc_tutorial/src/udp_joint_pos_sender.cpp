@@ -163,7 +163,7 @@ private:
       double received[9];
       std::memcpy(received, data.data(), sizeof(received));
 
-      const double tolerance = 5;
+      const double tolerance = 5e-3;
       bool all_close = true;
 
       if (sent_joint_positions_global.size() < 9)
